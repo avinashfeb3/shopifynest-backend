@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import mongoose from "mongoose";
 import userAuthRouter from "./routes/auth.route.js";
 import adminAuthRouter from "./routes/admin/admin.auth.route.js";
 import categoryRouter from "./routes/admin/category.route.js";
@@ -53,6 +54,18 @@ app.use(express.json({ limit: "20kb" }));
 // define urlencoded to accept 20kb payloads
 app.use(express.urlencoded({ limit: "20kb" }));
 app.use(express.static("public"));
+
+app.get("/api/v1/health", (req, res) => {
+	const isDbConnected = mongoose.connection.readyState === 1;
+
+	return res.status(200).json({
+		success: true,
+		message: "Backend is running",
+		data: {
+			dbConnected: isDbConnected,
+		},
+	});
+});
 
 // user authentication routes
 app.use("/api/v1/auth", userAuthRouter);
