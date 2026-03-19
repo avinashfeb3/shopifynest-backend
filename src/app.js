@@ -27,6 +27,8 @@ const allowedOriginPatterns = (process.env.CLIENT_ORIGIN_PATTERNS || "")
 	.filter(Boolean)
 	.map((pattern) => new RegExp(pattern));
 
+const localDevOriginPatterns = [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/];
+
 app.use(
 	cors({
 		origin: (origin, callback) => {
@@ -34,6 +36,7 @@ app.use(
 				!origin ||
 				allowedOrigins.includes(origin) ||
 				defaultOrigins.includes(origin) ||
+				localDevOriginPatterns.some((pattern) => pattern.test(origin)) ||
 				allowedOriginPatterns.some((pattern) => pattern.test(origin));
 			if (isAllowed) {
 				return callback(null, true);
@@ -68,5 +71,22 @@ app.use("/api/v1/admin/brands", brandRouter);
 
 // Admin Product routes
 app.use("/api/v1/admin/products", productRouter);
+
+// Return an explicit response for CORS rejections instead of generic 500
+app.use((err, req, res, next) => {
+	if (err?.message?.startsWith("CORS blocked:")) {
+		return res.status(403).json({
+			success: false,
+			message: err.message,
+			data: {},
+		});
+	}
+
+	return res.status(500).json({
+		success: false,
+		message: err.message || "Internal server error",
+		data: {},
+	});
+});
 
 export default app;
