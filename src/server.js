@@ -1,7 +1,6 @@
 import dotenv from "dotenv/config";
 import app from "./app.js";
-import { connectDB } from "./config/db.js";
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 // define port
 const PORT = process.env.PORT || 3000;
@@ -12,41 +11,52 @@ const PORT = process.env.PORT || 3000;
 // });
 
 let isConnected = false;
+let connectPromise = null;
 
 async function connectToMongoDB() {
-  try{
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    isConnected = true;
-    console.log("Successfully connected to MongoDB");
-  }catch (error) {
-    console.error("Error connecting to MongoDB:", error);
-    throw error; // Rethrow the error to be caught in the outer catch block
+  if (isConnected) return;
+  if (!connectPromise) {
+    connectPromise = mongoose
+      .connect(process.env.MONGODB_URI || process.env.MONGO_URI)
+      .then(() => {
+        isConnected = true;
+        console.log("Successfully connected to MongoDB");
+      })
+      .catch((error) => {
+        connectPromise = null;
+        console.error("Error connecting to MongoDB:", error);
+        throw error;
+      });
   }
+  await connectPromise;
 }
 
 // add middleware
-app.use((req, res, next) => {
-  if(!isConnected) {
-    connectToMongoDB();
+app.use(async (req, res, next) => {
+  try {
+    if (!isConnected) {
+      await connectToMongoDB();
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 });
 
 
 
 
-// Database connection
-// connectDB().then(() => {
-//   // start server
-//   app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-//   })
-// })
-// .catch((err) => {
-//     console.error("Failed to start server due to database connection error:", err);
-// })
+if (process.env.VERCEL !== "1") {
+  connectToMongoDB()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error("Failed to start server due to database connection error:", err);
+      process.exit(1);
+    });
+}
 
-module.exports = app;
+export default app;
