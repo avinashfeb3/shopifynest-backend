@@ -16,11 +16,18 @@ let connectPromise = null;
 async function connectToMongoDB() {
   if (isConnected) return;
   if (!connectPromise) {
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+    const dbName = process.env.MONGODB_DB_NAME || "shopifynest";
+
+    if (!mongoUri) {
+      throw new Error("MONGODB_URI is not set");
+    }
+
     connectPromise = mongoose
-      .connect(process.env.MONGODB_URI || process.env.MONGO_URI)
+      .connect(mongoUri, { dbName })
       .then(() => {
         isConnected = true;
-        console.log("Successfully connected to MongoDB");
+        console.log(`Successfully connected to MongoDB (${dbName})`);
       })
       .catch((error) => {
         connectPromise = null;

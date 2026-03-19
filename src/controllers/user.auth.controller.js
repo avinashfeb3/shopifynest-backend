@@ -9,7 +9,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     // validate request
-    if ([email, password].some((field) => field.trim() === "")) {
+    if (!email || !password || email.trim() === "" || password.trim() === "") {
       return res.status(400).json({
         success: false,
         message: "Email and password are required.",
@@ -60,7 +60,14 @@ const register = async (req, res) => {
     const { name, email, password } = req.body;
 
     // validate request
-    if ([name, email, password].some((field) => field.trim() === "")) {
+    if (
+      !name ||
+      !email ||
+      !password ||
+      name.trim() === "" ||
+      email.trim() === "" ||
+      password.trim() === ""
+    ) {
       return res.status(400).json({
         success: false,
         message: "All fields are required.",
