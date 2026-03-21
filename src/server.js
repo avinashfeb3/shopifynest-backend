@@ -38,21 +38,6 @@ async function connectToMongoDB() {
   await connectPromise;
 }
 
-// add middleware
-app.use(async (req, res, next) => {
-  try {
-    if (!isConnected) {
-      await connectToMongoDB();
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
-
-
-
 if (process.env.VERCEL !== "1") {
   connectToMongoDB()
     .then(() => {
@@ -66,4 +51,18 @@ if (process.env.VERCEL !== "1") {
     });
 }
 
-export default app;
+export default async function handler(req, res) {
+  try {
+    if (!isConnected) {
+      await connectToMongoDB();
+    }
+    return app(req, res);
+  } catch (error) {
+    console.error("Database connection failed:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Database connection failed",
+      data: {}
+    });
+  }
+}
