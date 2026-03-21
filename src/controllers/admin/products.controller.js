@@ -101,9 +101,13 @@ const createProduct = async (req, res) => {
       for (const file of req?.files) {
         if (file?.path) {
           const response = await uploadImageToCloudinary(file.path);
-          if (response && response.url && response.public_id) {
+          if (
+            response &&
+            (response.secure_url || response.url) &&
+            response.public_id
+          ) {
             gallery.push({
-              url: response.url,
+              url: response.secure_url || response.url,
               publicId: response.public_id,
             });
           }
@@ -111,8 +115,12 @@ const createProduct = async (req, res) => {
       }
     }
 
-    const finalSubcategory = subcategory === "null" || subcategory === "undefined" || !subcategory ? null : subcategory;
-    const finalBrand = brand === "null" || brand === "undefined" || !brand ? null : brand;
+    const finalSubcategory =
+      subcategory === "null" || subcategory === "undefined" || !subcategory
+        ? null
+        : subcategory;
+    const finalBrand =
+      brand === "null" || brand === "undefined" || !brand ? null : brand;
 
     // store data in the database
     const product = await products.create({
@@ -186,8 +194,12 @@ const updateProduct = async (req, res) => {
         : sizes
       : [];
 
-    const finalSubcategory = subcategory === "null" || subcategory === "undefined" || !subcategory ? null : subcategory;
-    const finalBrand = brand === "null" || brand === "undefined" || !brand ? null : brand;
+    const finalSubcategory =
+      subcategory === "null" || subcategory === "undefined" || !subcategory
+        ? null
+        : subcategory;
+    const finalBrand =
+      brand === "null" || brand === "undefined" || !brand ? null : brand;
 
     await products.updateOne(
       { _id: id },
