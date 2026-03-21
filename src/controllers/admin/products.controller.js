@@ -101,20 +101,25 @@ const createProduct = async (req, res) => {
       for (const file of req?.files) {
         if (file?.path) {
           const response = await uploadImageToCloudinary(file.path);
-          gallery.push({
-            url: response?.url,
-            publicId: response?.public_id,
-          });
+          if (response && response.url && response.public_id) {
+            gallery.push({
+              url: response.url,
+              publicId: response.public_id,
+            });
+          }
         }
       }
     }
+
+    const finalSubcategory = subcategory === "null" || subcategory === "undefined" || !subcategory ? null : subcategory;
+    const finalBrand = brand === "null" || brand === "undefined" || !brand ? null : brand;
 
     // store data in the database
     const product = await products.create({
       name,
       category,
-      subcategory: subcategory ? subcategory : null,
-      brand: brand ? brand : null,
+      subcategory: finalSubcategory,
+      brand: finalBrand,
       description,
       sku,
       price,
@@ -123,7 +128,6 @@ const createProduct = async (req, res) => {
       status: status
         ? status.charAt(0).toUpperCase() + status.slice(1)
         : "Inactive",
-      qty,
       isFeatured: is_featured
         ? is_featured.charAt(0).toUpperCase() + is_featured.slice(1)
         : "No",
@@ -148,6 +152,7 @@ const createProduct = async (req, res) => {
 // Update Product
 const updateProduct = async (req, res) => {
   try {
+    const { id } = req.params;
     // validate request
     const {
       name,
@@ -181,14 +186,17 @@ const updateProduct = async (req, res) => {
         : sizes
       : [];
 
+    const finalSubcategory = subcategory === "null" || subcategory === "undefined" || !subcategory ? null : subcategory;
+    const finalBrand = brand === "null" || brand === "undefined" || !brand ? null : brand;
+
     await products.updateOne(
       { _id: id },
       {
         $set: {
           name,
           category,
-          subcategory: subcategory ? subcategory : null,
-          brand: brand ? brand : null,
+          subcategory: finalSubcategory,
+          brand: finalBrand,
           description,
           sku,
           price,
