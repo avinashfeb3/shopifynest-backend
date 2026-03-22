@@ -20,9 +20,12 @@ npm install
 ```bash
 PORT=3000
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<db>
+MONGODB_DNS_SERVERS=1.1.1.1,8.8.8.8
 ACCESS_TOKEN_SECRET=replace_me
 ACCESS_TOKEN_EXPIRES_IN=1d
 ```
+
+If your network DNS blocks SRV lookups (error like `querySrv ECONNREFUSED`), set `MONGODB_DNS_SERVERS` as shown above.
 
 3) Run the server
 

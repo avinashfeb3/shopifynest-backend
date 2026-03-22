@@ -1,9 +1,19 @@
 import "dotenv/config";
 import app from "./app.js";
 import mongoose from "mongoose";
+import dns from "node:dns";
 
 // define port
 const PORT = process.env.PORT || 3000;
+
+const configuredDnsServers = (process.env.MONGODB_DNS_SERVERS || "")
+  .split(",")
+  .map((server) => server.trim())
+  .filter(Boolean);
+
+if (configuredDnsServers.length > 0) {
+  dns.setServers(configuredDnsServers);
+}
 
 // create test api endpoint
 // app.get("/test", (req, res) => {

@@ -281,4 +281,98 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-export { getProducts, getProduct, createProduct, deleteProduct, updateProduct };
+// Update Product Image
+const updateGallery = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await products.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found.",
+        data: {},
+      });
+    }
+    const filePath = req?.files?.[0]?.path;
+    if (!filePath) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file provided.",
+        data: {},
+      });
+    }
+    const response = await uploadImageToCloudinary(filePath);
+    product.gallery.push({
+      publicId: response.public_id,
+      url: response?.url,
+    });
+    await product.save();
+    return res.status(200).json({
+      success: true,
+      message: "Product gallery updated successfully.",
+      data: { product },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message ||
+        "Unable to update product gallery. Please try again later.",
+      data: {},
+    });
+  }
+};
+
+// Delete Product Image
+const deleteProductImage = async (req, res) => {
+  try {
+      const { id } = req.params;
+      const { public_id } = req.body;
+        const product = await products.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found.",
+        data: {},
+      });
+    }
+
+    const fileExists = product.gallery.some((img) => img.publicId === public_id);
+    if(!fileExists){
+       return res.status(404).json({ 
+        success: false,
+        message: "Image not found in product gallery.",
+        data: {},
+       });
+    }
+
+    await deleteImageFromCloudinary(public_id);
+    product.gallery = product.gallery.filter((img) => img.publicId !== public_id);
+    await product.save();
+    
+    return res.status(200).json({
+      success: true,
+      message: "Product image deleted successfully.",
+      data: { product },
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message ||
+        "Unable to update product gallery. Please try again later.",
+      data: {},
+    });
+  }
+}
+
+export {
+  getProducts,
+  getProduct,
+  createProduct,
+  deleteProduct,
+  updateProduct,
+  updateGallery,
+  deleteProductImage,
+};
