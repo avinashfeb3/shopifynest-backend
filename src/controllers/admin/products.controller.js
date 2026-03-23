@@ -326,8 +326,7 @@ const updateGallery = async (req, res) => {
 // Delete Product Image
 const deleteProductImage = async (req, res) => {
   try {
-      const { id } = req.params;
-      const { public_id } = req.body;
+      const { id, public_id } = req.params;
         const product = await products.findById(id);
     if (!product) {
       return res.status(404).json({

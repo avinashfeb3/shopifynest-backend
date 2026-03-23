@@ -8,9 +8,9 @@ const router = Router();
 router.route("/all").get(verifyJWT, getProducts);
 router.route("/create").post(verifyJWT,upload.array("images"),createProduct);
 router.route("/update/:id").put(verifyJWT, upload.array("images"),updateProduct);
-router.route("/update-gallery/:id").put(verifyJWT, upload.array("images"),updateGallery);
-router.route("/delete-image/:id").delete(verifyJWT, deleteProductImage);
 router.route("/:id").delete(verifyJWT, deleteProduct);
 router.route("/:id").get(verifyJWT, getProduct);
+router.route("/update-gallery/:id").put(verifyJWT, upload.array("images"),updateGallery);
+router.route("/delete-image/:id/:public_id").delete(verifyJWT, deleteProductImage);
 
 export default router;

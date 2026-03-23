@@ -6,6 +6,7 @@ import categoryRouter from "./routes/admin/category.route.js";
 import subcategoryRouter from "./routes/admin/subcategory.route.js";
 import brandRouter from "./routes/admin/brand.route.js";
 import productRouter from "./routes/admin/products.route.js";
+import homeRouter from "./routes/home.route.js";
 
 // initialize express app
 const app = express();
@@ -57,6 +58,24 @@ app.use(express.json({ limit: "20kb" }));
 app.use(express.urlencoded({ limit: "20kb" }));
 app.use(express.static("public"));
 
+// Global error handling middleware
+app.use((err, req, res, next) => {
+	if (err?.message?.startsWith("CORS blocked:")) {
+		return res.status(403).json({
+			success: false,
+			message: err.message,
+			data: {},
+		});
+	}
+
+	return res.status(500).json({
+		success: false,
+		message: err.message || "Internal server error",
+		data: {},
+	});
+});
+
+
 // user authentication routes
 app.use("/api/v1/auth", userAuthRouter);
 
@@ -75,20 +94,11 @@ app.use("/api/v1/admin/brands", brandRouter);
 // Admin Product routes
 app.use("/api/v1/admin/products", productRouter);
 
-app.use((err, req, res, next) => {
-	if (err?.message?.startsWith("CORS blocked:")) {
-		return res.status(403).json({
-			success: false,
-			message: err.message,
-			data: {},
-		});
-	}
+// Frontend home page routes
+app.use("/api/v1/home", homeRouter);
 
-	return res.status(500).json({
-		success: false,
-		message: err.message || "Internal server error",
-		data: {},
-	});
-});
+
+
+
 
 export default app;
