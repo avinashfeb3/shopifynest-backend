@@ -7,7 +7,7 @@ import products from "../../models/products.model.js";
 // Get Products
 const getProducts = async (req, res) => {
   try {
-    const allProducts = await products.find().populate("category");
+    const allProducts = await products.find().sort({ createdAt: -1 }).populate("category");
     return res.status(200).json({
       success: true,
       message: "Products fetched successfully.",
